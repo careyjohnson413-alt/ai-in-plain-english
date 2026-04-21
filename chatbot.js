@@ -15,13 +15,22 @@
     + 'who why will with you your do does did can could would should about into than then these those just')
     .split(' '));
 
-  const tokenize = (s) => (s.toLowerCase().match(/[a-z0-9]+/g) || []).filter(w => w.length > 1 && !STOP.has(w));
+  const stem = (w) => {
+    if (w.length > 4 && w.endsWith('ies')) return w.slice(0, -3) + 'y';
+    if (w.length > 4 && /(sses|shes|ches|xes|zes)$/.test(w)) return w.slice(0, -2);
+    if (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') && !w.endsWith('us') && !w.endsWith('is')) return w.slice(0, -1);
+    return w;
+  };
+  const tokenize = (s) => (s.toLowerCase().match(/[a-z0-9]+/g) || [])
+    .filter(w => w.length > 1 && !STOP.has(w))
+    .map(stem);
 
   let index = null;
   let indexing = null;
 
   async function buildIndex() {
     const docs = [];
+    const pages = [];
     await Promise.all(SOURCES.map(async (src) => {
       try {
         const html = await fetch(src.url).then(r => r.ok ? r.text() : '');
@@ -30,17 +39,25 @@
         doc.querySelectorAll('script,style,nav,footer,.navbar,.footer').forEach(n => n.remove());
         const root = doc.querySelector('.post, main, body');
         const blocks = root.querySelectorAll('p, li, h1, h2, h3, blockquote');
+        const pageTokens = [];
+        const pageTitleTokens = new Set(tokenize(src.title));
         blocks.forEach(el => {
           const text = el.textContent.replace(/\s+/g, ' ').trim();
           if (text.length < 40) return;
-          docs.push({ text, url: src.url, title: src.title, tokens: tokenize(text) });
+          const toks = tokenize(text);
+          docs.push({ text, url: src.url, title: src.title, tokens: toks, titleTokens: pageTitleTokens });
+          pageTokens.push(...toks);
         });
+        if (pageTokens.length) pages.push({ url: src.url, title: src.title, tokens: pageTokens, titleTokens: pageTitleTokens });
       } catch {}
     }));
-    // build doc frequency for tf-idf-ish scoring
+    // paragraph-level df
     const df = new Map();
     docs.forEach(d => new Set(d.tokens).forEach(t => df.set(t, (df.get(t) || 0) + 1)));
-    return { docs, df, N: docs.length };
+    // page-level df (how many pages contain the token)
+    const pdf = new Map();
+    pages.forEach(p => new Set(p.tokens).forEach(t => pdf.set(t, (pdf.get(t) || 0) + 1)));
+    return { docs, pages, df, pdf, N: docs.length, P: pages.length };
   }
 
   function ensureIndex() {
@@ -50,32 +67,88 @@
   }
 
   function answer(query, idx) {
-    const qTokens = tokenize(query);
+    const qTokens = [...new Set(tokenize(query))];
     if (!qTokens.length) return { hits: [], message: "Ask me something about ChatGPT, Claude, Gemini, or any of the posts on this site." };
-    const scored = idx.docs.map(d => {
+
+    // Stage 1: pick the best page(s). Require meaningful overlap, weight title matches heavily.
+    const pageIdf = (t) => Math.log(1 + idx.P / (1 + (idx.pdf.get(t) || 0)));
+    // Compute per-query-token signals
+    const tokenInfo = qTokens.map(t => {
+      const pagesWith = idx.pdf.get(t) || 0;
+      return { t, pagesWith, idf: pageIdf(t), onSite: pagesWith > 0, specific: pagesWith > 0 && pagesWith <= Math.max(2, Math.ceil(idx.P / 2)) };
+    });
+    const unknownTokens = tokenInfo.filter(x => !x.onSite).map(x => x.t);
+    const specificTokens = tokenInfo.filter(x => x.specific).map(x => x.t);
+
+    // If the user used words that simply don't appear on the site AND didn't include any distinctive on-site word, reject.
+    if (unknownTokens.length > 0 && specificTokens.length === 0) {
+      return { hits: [], message: "I couldn't find that topic in any of the posts on this site. Try asking about ChatGPT, Claude, Gemini, or how to sign up." };
+    }
+    // If the user included a content-word (length >= 5) the site has no record of, that's their topic and we should bail.
+    const meaningfulUnknown = unknownTokens.filter(t => t.length >= 5);
+    if (meaningfulUnknown.length > 0) {
+      return { hits: [], message: `I couldn't find anything on the site about "${meaningfulUnknown.join('", "')}". Try asking about ChatGPT, Claude, Gemini, or how to sign up.` };
+    }
+
+    const pageScores = idx.pages.map(p => {
+      const set = new Set(p.tokens);
       let score = 0;
-      const tf = new Map();
-      d.tokens.forEach(t => tf.set(t, (tf.get(t) || 0) + 1));
+      let matched = 0;
+      let matchedSpecific = false;
       qTokens.forEach(t => {
-        const f = tf.get(t);
-        if (!f) return;
-        const idfv = Math.log(1 + idx.N / (1 + (idx.df.get(t) || 0)));
-        score += f * idfv;
+        const inTitle = p.titleTokens.has(t);
+        const inBody = set.has(t);
+        if (!inTitle && !inBody) return;
+        matched++;
+        const info = tokenInfo.find(x => x.t === t);
+        if (info && (info.specific || inTitle)) matchedSpecific = true;
+        score += info.idf * (inTitle ? 6 : 1);
       });
-      return { d, score };
-    }).filter(x => x.score > 0)
+      return { page: p, score, matched, matchedSpecific };
+    }).sort((a, b) => b.score - a.score);
+
+    const best = pageScores[0];
+    // If on-site specific tokens exist, require the best page to match at least one of them.
+    if (!best || best.matched === 0 || (specificTokens.length > 0 && !best.matchedSpecific)) {
+      return { hits: [], message: "I couldn't find that topic in any of the posts on this site. Try asking about ChatGPT, Claude, Gemini, or how to sign up." };
+    }
+
+    // Stage 2: among the top pages, pick the best paragraphs
+    const topPageUrls = new Set(pageScores.filter(p => p.score >= best.score * 0.4 && p.matched > 0).slice(0, 3).map(p => p.page.url));
+    const paraIdf = (t) => Math.log(1 + idx.N / (1 + (idx.df.get(t) || 0)));
+    const paraScored = idx.docs
+      .filter(d => topPageUrls.has(d.url))
+      .map(d => {
+        const tf = new Map();
+        d.tokens.forEach(t => tf.set(t, (tf.get(t) || 0) + 1));
+        let score = 0;
+        let matched = 0;
+        qTokens.forEach(t => {
+          const f = tf.get(t);
+          if (!f) return;
+          matched++;
+          score += f * paraIdf(t);
+        });
+        // length normalization to avoid favoring very long paragraphs
+        score = score / Math.sqrt(d.tokens.length || 1);
+        // boost if paragraph's source page title matched a query term
+        if ([...d.titleTokens].some(t => qTokens.includes(t))) score *= 1.5;
+        return { d, score, matched };
+      })
+      .filter(x => x.matched > 0 && x.score > 0)
       .sort((a, b) => b.score - a.score);
 
-    const seenTitles = new Set();
+    if (!paraScored.length) return { hits: [], message: "I couldn't find a good passage on that topic. Try rephrasing?" };
+
+    const seen = new Set();
     const hits = [];
-    for (const s of scored) {
-      const key = s.d.title + '|' + s.d.text.slice(0, 40);
-      if (seenTitles.has(key)) continue;
-      seenTitles.add(key);
+    for (const s of paraScored) {
+      const key = s.d.url + '|' + s.d.text.slice(0, 60);
+      if (seen.has(key)) continue;
+      seen.add(key);
       hits.push(s.d);
       if (hits.length >= 3) break;
     }
-    if (!hits.length) return { hits: [], message: "I couldn't find anything about that on the site. Try rephrasing, or ask about ChatGPT, Claude, Gemini, or signup guides." };
     return { hits };
   }
 
