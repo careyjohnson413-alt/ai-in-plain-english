@@ -21,6 +21,9 @@
   --white:    #ffffff;
   --light:    #ece7dd;
   --muted:    #6b6b7b;
+  --navbar-bg: rgba(255, 255, 255, 0.92);
+  --navbar-border: rgba(0, 0, 0, 0.06);
+  --border-subtle: rgba(0, 0, 0, 0.05);
   --card-shadow: 0 1px 3px rgba(0,0,0,0.04);
   --card-shadow-hover: 0 12px 32px rgba(0,0,0,0.1);
 
@@ -29,6 +32,31 @@
 
   --max-width: 1120px;
   --section-gap: 6rem;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg:       #15151f;
+  --ink:      #f1ece2;
+  --accent:   #ff7a4e;
+  --accent-hover: #ff9166;
+  --white:    #1f1f2d;
+  --light:    #2a2a38;
+  --muted:    #9aa0ae;
+  --navbar-bg: rgba(21, 21, 31, 0.85);
+  --navbar-border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  --card-shadow-hover: 0 16px 40px rgba(0,0,0,0.5);
+}
+
+/* Smooth cross-fade when toggling */
+html {
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+body, .navbar, .card, .footer, .post blockquote, .post .callout, .post .stat-card,
+.cb-panel, .cb-body, .cb-msg.bot, .cb-input {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
 }
 
 /* --- Global Defaults --- */
@@ -68,10 +96,10 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 1.1rem 2.5rem;
-  background-color: rgba(255,255,255,0.92);
+  background-color: var(--navbar-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid var(--navbar-border);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -121,6 +149,41 @@ a:hover {
 .navbar nav a:hover::after {
   width: 100%;
 }
+
+/* Theme toggle button in navbar */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--navbar-border);
+  color: var(--ink);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  margin-left: 1.25rem;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.theme-toggle:hover {
+  background-color: var(--light);
+  border-color: var(--accent);
+  transform: rotate(15deg);
+}
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+[data-theme="dark"] .theme-toggle .icon-sun  { display: block; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+.theme-toggle .icon-sun  { display: none; }
+.theme-toggle .icon-moon { display: block; }
 
 /* ============================================
    HERO SECTION
@@ -256,7 +319,7 @@ a:hover {
   background-color: var(--white);
   border-radius: 14px;
   padding: 2rem;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--border-subtle);
   box-shadow: var(--card-shadow);
   transition: box-shadow 0.3s ease, transform 0.3s ease;
   display: flex;
