@@ -37,17 +37,45 @@
 /* Dark theme */
 [data-theme="dark"] {
   --bg:       #15151f;
-  --ink:      #f1ece2;
+  --ink:      #ffffff;
   --accent:   #ff7a4e;
   --accent-hover: #ff9166;
   --white:    #1f1f2d;
   --light:    #2a2a38;
-  --muted:    #9aa0ae;
+  --muted:    #ffffff;
   --navbar-bg: rgba(21, 21, 31, 0.85);
   --navbar-border: rgba(255, 255, 255, 0.08);
   --border-subtle: rgba(255, 255, 255, 0.08);
   --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
   --card-shadow-hover: 0 16px 40px rgba(0,0,0,0.5);
+}
+
+/* Dark mode: force all text white (except the orange accent and chatbot user bubbles) */
+[data-theme="dark"] body,
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] p,
+[data-theme="dark"] li,
+[data-theme="dark"] a,
+[data-theme="dark"] span,
+[data-theme="dark"] blockquote,
+[data-theme="dark"] .post-meta,
+[data-theme="dark"] .footer,
+[data-theme="dark"] .footer a,
+[data-theme="dark"] .navbar a,
+[data-theme="dark"] .card,
+[data-theme="dark"] .card * {
+  color: #ffffff;
+}
+[data-theme="dark"] .accent,
+[data-theme="dark"] .site-name,
+[data-theme="dark"] a.accent,
+[data-theme="dark"] .hero-accent {
+  color: var(--accent);
 }
 
 /* Smooth cross-fade when toggling */
@@ -230,7 +258,7 @@ a:hover {
   font-weight: 800;
   line-height: 1.15;
   margin-bottom: 1.5rem;
-  color: var(--white);
+  color: #ffffff;
 }
 
 .hero p {
