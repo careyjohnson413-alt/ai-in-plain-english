@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How Claude Is Designed — AI in Plain English</title>
+  <link rel="stylesheet" href="global.css">
+</head>
+<body>
+
+  <!-- ====== NAVIGATION BAR ====== -->
+  <header class="navbar">
+    <a href="index.html" class="site-name">AI in Plain English</a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </header>
+
+  <!-- ====== ARTICLE ====== -->
+  <article class="post">
+
+    <h1>How Claude Is Designed: The Thinking Behind the AI</h1>
+
+    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80"
+         alt="Architectural blueprint with precise lines and careful structure"
+         class="post-hero-img">
+
+    <p>Most AI tools feel pretty similar on the surface — you type a question, you get an answer. But underneath, the companies that build them have very different philosophies about what AI <em>should</em> be. Anthropic, the team behind Claude, has been unusually open about theirs.</p>
+
+    <p>Here's the short version, without the jargon.</p>
+
+    <h2>Three Words That Guide Everything</h2>
+
+    <p>Anthropic designs Claude around three simple goals. They sound obvious but they're harder than you'd think:</p>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-number">Helpful</div>
+        <div class="stat-label">Actually useful for what you're trying to do</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">Harmless</div>
+        <div class="stat-label">Won't help with things that hurt people</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">Honest</div>
+        <div class="stat-label">Tells you when it's unsure or wrong</div>
+      </div>
+    </div>
+
+    <p>The trick is that these three sometimes pull against each other. The most "helpful" answer isn't always the most honest one. The "harmless" choice sometimes means refusing to help. Claude is trained to notice that tension and make thoughtful calls.</p>
+
+    <h2>Something Called "Constitutional AI"</h2>
+
+    <p>Anthropic uses a training method they invented called <strong>Constitutional AI</strong>. The idea is simple, even if the name sounds fancy.</p>
+
+    <p>Instead of just showing Claude lots of example conversations and hoping it learns good behavior, Anthropic gave it a written set of principles — a kind of constitution. Claude is trained to check its own answers against those principles and revise them when they fall short.</p>
+
+    <figure>
+      <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=1400&q=80"
+           alt="A stack of open books representing written principles and careful thought">
+      <figcaption>Think of it as teaching the AI to consult a rulebook — and, importantly, to explain why it's saying no when it says no.</figcaption>
+    </figure>
+
+    <p>The principles are things like: be respectful, avoid stereotypes, acknowledge uncertainty, don't pretend to be human, don't give instructions that could cause serious harm. Nothing exotic — they're the kind of values a thoughtful person would want in any assistant.</p>
+
+    <h2>Why It Feels Different</h2>
+
+    <p>You can actually feel the design philosophy in the way Claude talks. A few things you'll notice:</p>
+
+    <ul>
+      <li><strong>It hedges when it should.</strong> "I'm not certain, but…" or "You should double-check this with a professional." That's deliberate.</li>
+      <li><strong>It asks clarifying questions.</strong> Instead of guessing what you meant, it'll often ask.</li>
+      <li><strong>It explains its refusals.</strong> If it won't do something, it tells you why — no cryptic "I can't help with that."</li>
+      <li><strong>It'll push back politely.</strong> If you ask it to write something misleading, it'll usually say so.</li>
+    </ul>
+
+    <div class="callout">
+      <h3>The honest tradeoff</h3>
+      <p>This careful design means Claude sometimes feels slower to just "do the thing" than other AI tools. That's the deal Anthropic is making — a little more friction in exchange for fewer bad outcomes. Whether that's the right tradeoff for you depends on what you're using it for.</p>
+    </div>
+
+    <h2>The Safety Focus Isn't Marketing</h2>
+
+    <p>Anthropic was founded in 2021 by former OpenAI researchers who wanted to focus on AI safety specifically. That's the company's whole reason for existing. It shows up in how much of their published research is about the <em>risks</em> of AI rather than its capabilities.</p>
+
+    <p>You don't have to care about any of that to use Claude. But it's worth knowing that when you're using it, you're using a tool built by people who spend most of their time thinking about how AI can go wrong — and trying to head that off.</p>
+
+    <h2>What This Means for You</h2>
+
+    <p>For everyday use, Claude's design philosophy translates into an assistant that feels a bit more like a careful colleague than a flashy demo. It's thoughtful. It's honest about its limits. It won't try to dazzle you when a simple answer will do.</p>
+
+    <p>If that sounds appealing, give it a try at <a href="https://claude.ai" target="_blank">claude.ai</a>.</p>
+
+    <a href="blog.html" class="back-link">&larr; Back to all posts</a>
+
+  </article>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <p class="footer-name">AI in Plain English</p>
+        <p>Clear, simple guides to the AI tools everyone is talking about. Built for beginners, not engineers.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <a href="index.html">Home</a>
+        <a href="blog.html">Blog</a>
+        <a href="chatgpt.html">ChatGPT</a>
+        <a href="gemini.html">Gemini</a>
+        <a href="claude.html">Claude</a>
+      </div>
+      <div class="footer-col">
+        <h4>Popular Posts</h4>
+        <a href="post-opus-4-7.html">Meet Claude Opus 4.7</a>
+        <a href="post-claude-design.html">How Claude Is Designed</a>
+        <a href="post-claude-personality.html">Why Claude Feels Different</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 AI in Plain English. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script defer src="chatbot.js"></script>
+</body>
+</html>
