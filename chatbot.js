@@ -1,4 +1,6 @@
 (() => {
+  const WORKER_URL = 'https://ai-in-plain-english-chat.careyjohnson413.workers.dev';
+
   const SOURCES = [
     { url: 'index.html',                  title: 'Home' },
     { url: 'blog.html',                   title: 'Blog' },
@@ -255,7 +257,7 @@
 
     const showTyping = () => addMsg('bot', '<span class="cb-typing"><span></span><span></span><span></span></span>');
 
-    addMsg('bot', "Hi! I can answer questions using the posts on this site. Try asking about ChatGPT, Claude, Gemini, or how to sign up.");
+    addMsg('bot', "Hi! I'm an AI assistant for this site. Ask me about ChatGPT, Claude, Gemini, or anything else covered in the posts.");
 
     const open = () => {
       panel.classList.add('open');
@@ -269,6 +271,17 @@
 
     const escapeHtml = (s) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+    async function askWorker(question, passages) {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, passages }),
+      });
+      if (!res.ok) throw new Error('Worker error ' + res.status);
+      const data = await res.json();
+      return data.answer || '';
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const q = input.value.trim();
@@ -280,24 +293,52 @@
       try {
         const idx = await ensureIndex();
         const { hits, message } = answer(q, idx);
-        typing.remove();
+
+        // If retrieval rejected the query, show that directly (saves an API call).
         if (message) {
+          typing.remove();
           addMsg('bot', escapeHtml(message));
+          return;
+        }
+
+        // Send top passages + question to the Worker for an AI-synthesized answer.
+        const passages = hits.map(h => ({ title: h.title, text: h.text }));
+        let aiAnswer = '';
+        try {
+          aiAnswer = await askWorker(q, passages);
+        } catch (err) {
+          // Fall back to raw-passage answer if the Worker fails
+        }
+        typing.remove();
+
+        const sources = [];
+        const seenUrls = new Set();
+        for (const h of hits) {
+          if (seenUrls.has(h.url)) continue;
+          seenUrls.add(h.url);
+          sources.push(h);
+        }
+
+        let html;
+        if (aiAnswer) {
+          html = escapeHtml(aiAnswer).replace(/\n/g, '<br>');
+          html += `<span class="cb-src" style="color:var(--muted,#6b6b7b);font-weight:500;">Sources: `
+            + sources.map(r => `<a href="${r.url}" style="color:var(--accent,#e8633a);">${escapeHtml(r.title)}</a>`).join(', ')
+            + '</span>';
         } else {
           const top = hits[0];
-          const related = hits.slice(1);
-          let html = escapeHtml(top.text);
+          html = escapeHtml(top.text);
           html += `<span class="cb-src">— <a href="${top.url}">${escapeHtml(top.title)}</a></span>`;
-          if (related.length) {
+          if (sources.length > 1) {
             html += `<span class="cb-src" style="margin-top:0.35rem;color:var(--muted,#6b6b7b);font-weight:500;">Related: `
-              + related.map(r => `<a href="${r.url}" style="color:var(--accent,#e8633a);">${escapeHtml(r.title)}</a>`).join(', ')
+              + sources.slice(1).map(r => `<a href="${r.url}" style="color:var(--accent,#e8633a);">${escapeHtml(r.title)}</a>`).join(', ')
               + '</span>';
           }
-          addMsg('bot', html);
         }
+        addMsg('bot', html);
       } catch (err) {
         typing.remove();
-        addMsg('bot', "Something went wrong searching the posts. Try again?");
+        addMsg('bot', "Something went wrong. Try again?");
       } finally {
         sendBtn.disabled = false;
         input.focus();
