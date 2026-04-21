@@ -10,6 +10,8 @@
     { url: 'post-opus-4-7.html',          title: 'Meet Claude Opus 4.7' },
     { url: 'post-claude-design.html',     title: 'How Claude Is Designed' },
     { url: 'post-claude-personality.html',title: "Claude's Personality" },
+    { url: 'post-ai-images.html',         title: 'AI Tools for Making Pictures' },
+    { url: 'post-ai-video.html',          title: 'AI Tools for Making Videos' },
   ];
 
   const STOP = new Set(('a an and are as at be but by for from has have he her his how i if in is it its '
