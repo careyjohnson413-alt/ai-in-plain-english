@@ -74,6 +74,19 @@
   color: var(--accent);
 }
 
+/* Footer sits on a dark background in both themes — keep its text light in dark mode */
+[data-theme="dark"] .footer,
+[data-theme="dark"] .footer p,
+[data-theme="dark"] .footer-brand .footer-name,
+[data-theme="dark"] .footer-col h4 {
+  color: #ffffff;
+}
+[data-theme="dark"] .footer-col a,
+[data-theme="dark"] .footer-brand p,
+[data-theme="dark"] .footer-bottom p {
+  color: rgba(255, 255, 255, 0.75);
+}
+
 /* Smooth cross-fade when toggling */
 html {
   transition: background-color 0.35s ease, color 0.35s ease;
