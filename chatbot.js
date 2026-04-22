@@ -4,6 +4,7 @@
   const SOURCES = [
     { url: 'index.html',                  title: 'Home' },
     { url: 'blog.html',                   title: 'Blog' },
+    { url: 'about.html',                  title: 'About' },
     { url: 'chatgpt.html',                title: 'ChatGPT' },
     { url: 'claude.html',                 title: 'Claude' },
     { url: 'gemini.html',                 title: 'Gemini' },
@@ -12,6 +13,7 @@
     { url: 'post-claude-personality.html',title: "Claude's Personality" },
     { url: 'post-ai-images.html',         title: 'AI Tools for Making Pictures' },
     { url: 'post-ai-video.html',          title: 'AI Tools for Making Videos' },
+    { url: 'post-gpt-image-2.html',       title: 'GPT Image 2 Is Here' },
   ];
 
   const STOP = new Set(('a an and are as at be but by for from has have he her his how i if in is it its '

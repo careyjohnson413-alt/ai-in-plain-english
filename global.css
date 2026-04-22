@@ -16,6 +16,7 @@
 :root {
   --bg:       #f5f0e8;
   --ink:      #1a1a2e;
+  --ink-bg:   #1a1a2e;   /* dark surface used for footer, always dark */
   --accent:   #e8633a;
   --accent-hover: #d15530;
   --white:    #ffffff;
@@ -34,13 +35,14 @@
   --section-gap: 6rem;
 }
 
-/* Dark theme */
+/* Dark theme — all text becomes white (via --ink), all surfaces dark */
 [data-theme="dark"] {
   --bg:       #15151f;
-  --ink:      #0f0f18;
+  --ink:      #ffffff;   /* text color; overrides everything using var(--ink) */
+  --ink-bg:   #0f0f18;   /* footer surface, stays dark */
   --accent:   #ff7a4e;
   --accent-hover: #ff9166;
-  --white:    #1f1f2d;
+  --white:    #1f1f2d;   /* card/surface bg color */
   --light:    #2a2a38;
   --muted:    #c8ccd6;
   --navbar-bg: rgba(21, 21, 31, 0.85);
@@ -50,41 +52,17 @@
   --card-shadow-hover: 0 16px 40px rgba(0,0,0,0.5);
 }
 
-/* Dark mode: force page text white, but keep the dark-backgrounded footer text readable */
-[data-theme="dark"] body,
-[data-theme="dark"] h1,
-[data-theme="dark"] h2,
-[data-theme="dark"] h3,
-[data-theme="dark"] h4,
-[data-theme="dark"] h5,
-[data-theme="dark"] h6,
-[data-theme="dark"] p,
-[data-theme="dark"] li,
-[data-theme="dark"] blockquote,
-[data-theme="dark"] .post-meta,
-[data-theme="dark"] .navbar a,
-[data-theme="dark"] .card,
-[data-theme="dark"] .card * {
-  color: #ffffff;
-}
-[data-theme="dark"] .accent,
-[data-theme="dark"] .site-name,
-[data-theme="dark"] a.accent,
-[data-theme="dark"] .hero-accent {
-  color: var(--accent);
-}
-
-/* Footer sits on a dark background in both themes — keep its text light in dark mode */
-[data-theme="dark"] .footer,
-[data-theme="dark"] .footer p,
+/* Elements that hard-code var(--white) for text (which is a dark surface in dark mode)
+   need explicit white text on their dark surface. */
 [data-theme="dark"] .footer-brand .footer-name,
-[data-theme="dark"] .footer-col h4 {
+[data-theme="dark"] .footer-col h4,
+[data-theme="dark"] .footer {
   color: #ffffff;
 }
 [data-theme="dark"] .footer-col a,
 [data-theme="dark"] .footer-brand p,
 [data-theme="dark"] .footer-bottom p {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.78);
 }
 
 /* Smooth cross-fade when toggling */
@@ -217,10 +195,52 @@ a:hover {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-[data-theme="dark"] .theme-toggle .icon-sun  { display: block; }
+[data-theme="dark"] .theme-toggle {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+}
+[data-theme="dark"] .theme-toggle:hover {
+  border-color: var(--accent);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .theme-toggle .icon-sun  { display: block; stroke: #ffffff; }
 [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 .theme-toggle .icon-sun  { display: none; }
 .theme-toggle .icon-moon { display: block; }
+
+/* ============================================
+   HAMBURGER / MOBILE MENU
+   ============================================ */
+.menu-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--navbar-border);
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.75rem;
+  padding: 0;
+  color: var(--ink);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.menu-toggle:hover {
+  border-color: var(--accent);
+}
+.menu-toggle svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+[data-theme="dark"] .menu-toggle {
+  border-color: rgba(255,255,255,0.45);
+  color: #ffffff;
+}
 
 /* ============================================
    HERO SECTION
@@ -453,7 +473,7 @@ a:hover {
    FOOTER
    ============================================ */
 .footer {
-  background-color: var(--ink);
+  background-color: var(--ink-bg);
   color: rgba(255,255,255,0.5);
   margin-top: var(--section-gap);
   padding: 4rem 2rem 2.5rem;
@@ -737,11 +757,50 @@ a:hover {
   }
 
   .navbar {
-    padding: 1rem 1.25rem;
+    padding: 0.9rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .navbar .site-name {
+    font-size: 1.1rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
   }
 
   .navbar nav {
-    gap: 1.25rem;
+    order: 3;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    max-height: 0;
+    overflow: hidden;
+    margin-top: 0;
+    transition: max-height 0.3s ease, margin-top 0.3s ease;
+  }
+
+  .navbar.open nav {
+    max-height: 420px;
+    margin-top: 0.75rem;
+  }
+
+  .navbar nav a {
+    padding: 0.9rem 0.25rem;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 1rem;
+  }
+
+  .navbar nav a::after {
+    display: none;
+  }
+
+  .navbar nav .theme-toggle {
+    align-self: flex-start;
+    margin: 0.75rem 0 0.25rem;
   }
 
   .section-title {
